@@ -607,14 +607,205 @@
     .hidden {
       display: none !important;
     }
+
+    /* Dark Mode - Inverted Color Scheme */
+    body.dark-mode {
+      background: #0a0a0a;
+      color: var(--white);
+    }
+
+    body.dark-mode .card {
+      background: #1a1a1a;
+      border-color: #333;
+    }
+
+    body.dark-mode .mode-btn {
+      background: #2a2a2a;
+      color: #999;
+    }
+
+    body.dark-mode .mode-btn:hover {
+      border-color: #444;
+    }
+
+    body.dark-mode .mode-btn.active {
+      background: var(--white);
+      color: var(--black);
+    }
+
+    body.dark-mode .title {
+      color: var(--white);
+    }
+
+    body.dark-mode .record-btn {
+      background: var(--white);
+    }
+
+    body.dark-mode .record-btn svg {
+      color: var(--black);
+    }
+
+    body.dark-mode .record-btn.recording {
+      background: var(--lie);
+    }
+
+    body.dark-mode .record-btn.recording svg {
+      color: var(--white);
+    }
+
+    body.dark-mode .record-hint {
+      color: #888;
+    }
+
+    body.dark-mode .timer {
+      color: var(--white);
+    }
+
+    body.dark-mode .party-input {
+      background: #2a2a2a;
+      border-color: #444;
+      color: var(--white);
+    }
+
+    body.dark-mode .party-input::placeholder {
+      color: #666;
+    }
+
+    body.dark-mode .party-input:focus {
+      border-color: var(--white);
+    }
+
+    body.dark-mode .suggestion-chip {
+      background: #2a2a2a;
+      color: #aaa;
+    }
+
+    body.dark-mode .suggestion-chip:hover {
+      background: #3a3a3a;
+    }
+
+    body.dark-mode .player-item {
+      background: #2a2a2a;
+    }
+
+    body.dark-mode .player-name {
+      color: var(--white);
+    }
+
+    body.dark-mode .btn-primary {
+      background: var(--white);
+      color: var(--black);
+    }
+
+    body.dark-mode .btn-primary:hover {
+      background: #e5e5e5;
+    }
+
+    body.dark-mode .btn-primary:disabled {
+      background: #333;
+      color: #666;
+    }
+
+    body.dark-mode .btn-secondary {
+      background: transparent;
+      border-color: #444;
+      color: var(--white);
+    }
+
+    body.dark-mode .btn-secondary:hover {
+      border-color: var(--white);
+    }
+
+    body.dark-mode .analyzing-overlay {
+      background: rgba(10, 10, 10, 0.95);
+    }
+
+    body.dark-mode .analyzing-spinner {
+      border-color: #333;
+      border-top-color: var(--white);
+    }
+
+    body.dark-mode .analyzing-text {
+      color: var(--white);
+    }
+
+    body.dark-mode .confidence-row {
+      border-color: #333;
+    }
+
+    body.dark-mode .confidence-label {
+      color: #888;
+    }
+
+    body.dark-mode .confidence-value {
+      color: var(--white);
+    }
+
+    body.dark-mode .transcript-section {
+      border-color: #333;
+    }
+
+    body.dark-mode .section-label {
+      color: #666;
+    }
+
+    body.dark-mode .transcript-text {
+      color: var(--white);
+    }
+
+    body.dark-mode .analysis-section {
+      border-color: #333;
+    }
+
+    body.dark-mode .analysis-title {
+      color: var(--white);
+    }
+
+    body.dark-mode .analysis-content {
+      color: #999;
+    }
+
+    body.dark-mode .footer-text {
+      color: #555;
+    }
+
+    body.dark-mode .content-mode-btn {
+      color: #666;
+    }
+
+    body.dark-mode .content-mode-btn:hover {
+      color: #999;
+    }
+
+    body.dark-mode .content-mode-btn.active {
+      background: var(--white);
+      color: var(--black);
+    }
+
+    body.dark-mode .content-mode-btn.active.family {
+      background: var(--family);
+      color: var(--white);
+    }
+
+    body.dark-mode .logo {
+      color: #666;
+    }
+
+    body.dark-mode .verdict-label {
+      color: #666;
+    }
+
+    body.dark-mode .player-score {
+      color: var(--white);
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <!-- Content Mode Toggle -->
     <div class="content-mode-toggle">
-      <button class="content-mode-btn family" data-content="family">👨‍👩‍👧‍👦 Family Friendly</button>
-      <button class="content-mode-btn active" data-content="dark">🔥 Dark</button>
+      <button class="content-mode-btn family active" data-content="family">👨‍👩‍👧‍👦 Family Friendly</button>
+      <button class="content-mode-btn" data-content="dark">🔥 Dark</button>
     </div>
 
     <header>
@@ -851,7 +1042,7 @@
     ];
 
     // ============ STATE ============
-    let contentMode = 'dark'; // 'family' or 'dark'
+    let contentMode = 'family'; // 'family' or 'dark'
     let gameMode = 'free'; // 'free', 'challenge', 'party'
     let currentChallenge = null;
     let mediaRecorder = null;
@@ -886,13 +1077,15 @@
         btn.classList.add('active');
         contentMode = btn.dataset.content;
         
-        // Update card style
+        // Update card style and body dark mode
         if (contentMode === 'family') {
           challengeCard.classList.add('family-mode');
           partyQuestionCard.classList.add('family-mode');
+          document.body.classList.remove('dark-mode');
         } else {
           challengeCard.classList.remove('family-mode');
           partyQuestionCard.classList.remove('family-mode');
+          document.body.classList.add('dark-mode');
         }
         
         // Refresh challenge if visible

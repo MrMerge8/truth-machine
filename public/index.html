@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Truth Machine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --black: #000000;
+      --white: #ffffff;
+      --gray-100: #f5f5f5;
+      --gray-200: #e5e5e5;
+      --gray-400: #a3a3a3;
+      --gray-600: #525252;
+      --truth: #22c55e;
+      --lie: #ef4444;
+      --family: #3b82f6;
+      --dark: #000000;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--gray-100);
+      color: var(--black);
+      min-height: 100vh;
+      line-height: 1.4;
+    }
+
+    .container {
+      max-width: 440px;
+      margin: 0 auto;
+      padding: 20px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Content Mode Toggle (Top) */
+    .content-mode-toggle {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 0;
+      margin-bottom: 8px;
+    }
+
+    .content-mode-btn {
+      padding: 8px 16px;
+      background: transparent;
+      border: none;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray-400);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      border-radius: 20px;
+    }
+
+    .content-mode-btn:hover {
+      color: var(--gray-600);
+    }
+
+    .content-mode-btn.active {
+      background: var(--black);
+      color: var(--white);
+    }
+
+    .content-mode-btn.active.family {
+      background: var(--family);
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      padding: 16px 0 24px;
+    }
+
+    .logo {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gray-400);
+    }
+
+    .title {
+      font-size: clamp(2rem, 10vw, 2.75rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      margin-top: 8px;
+      color: var(--black);
+    }
+
+    /* Cards */
+    .card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    /* Game Mode Toggle */
+    .mode-toggle {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .mode-btn {
+      flex: 1;
+      min-width: 90px;
+      padding: 12px 10px;
+      background: var(--gray-100);
+      border: 2px solid transparent;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray-600);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .mode-btn:hover {
+      border-color: var(--gray-200);
+    }
+
+    .mode-btn.active {
+      background: var(--black);
+      color: var(--white);
+    }
+
+    /* Challenge card (black card style) */
+    .challenge-card {
+      display: none;
+      background: #000 !important;
+      color: #fff !important;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 16px;
+      min-height: 200px;
+      position: relative;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+      flex-direction: column;
+    }
+
+    .challenge-card.visible {
+      display: flex !important;
+    }
+
+    .challenge-card.family-mode {
+      background: var(--family) !important;
+    }
+
+    .challenge-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.6) !important;
+      margin-bottom: 12px;
+    }
+
+    .challenge-text {
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1.3;
+      color: #fff !important;
+      flex: 1;
+    }
+
+    .challenge-footer {
+      margin-top: auto;
+    }
+
+    .challenge-logo {
+      font-size: 8px;
+      font-weight: 800;
+      letter-spacing: 0.15em;
+      color: rgba(255,255,255,0.4) !important;
+      text-align: right;
+      margin-top: 16px;
+    }
+
+    .shuffle-btn {
+      width: 100%;
+      padding: 14px;
+      margin-top: 16px;
+      background: transparent !important;
+      border: 2px solid rgba(255,255,255,0.3) !important;
+      border-radius: 8px;
+      color: #fff !important;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .shuffle-btn:hover {
+      border-color: #fff !important;
+      background: rgba(255,255,255,0.1) !important;
+    }
+
+    /* Party Mode Styles */
+    .party-setup {
+      display: none;
+    }
+
+    .party-setup.visible {
+      display: block;
+    }
+
+    .party-input {
+      width: 100%;
+      padding: 16px;
+      border: 2px solid var(--gray-200);
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 16px;
+      margin-bottom: 12px;
+      transition: border-color 0.15s ease;
+    }
+
+    .party-input:focus {
+      outline: none;
+      border-color: var(--black);
+    }
+
+    .party-input::placeholder {
+      color: var(--gray-400);
+    }
+
+    .suggestion-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .suggestion-chip {
+      padding: 8px 12px;
+      background: var(--gray-100);
+      border: none;
+      border-radius: 20px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--gray-600);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .suggestion-chip:hover {
+      background: var(--gray-200);
+    }
+
+    .player-list {
+      margin: 20px 0;
+    }
+
+    .player-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--gray-100);
+      border-radius: 10px;
+      margin-bottom: 8px;
+    }
+
+    .player-name {
+      font-weight: 600;
+    }
+
+    .player-status {
+      font-size: 12px;
+      color: var(--gray-400);
+    }
+
+    .player-status.done {
+      color: var(--truth);
+    }
+
+    .player-score {
+      font-weight: 800;
+      font-size: 18px;
+    }
+
+    .winner-badge {
+      background: var(--truth);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      margin-left: 8px;
+    }
+
+    /* Record section */
+    .record-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 0;
+    }
+
+    .record-btn {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: none;
+      background: var(--black);
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .record-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .record-btn:active {
+      transform: scale(0.98);
+    }
+
+    .record-btn.recording {
+      background: var(--lie);
+      animation: pulse 1s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+      50% { transform: scale(1.02); box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
+    }
+
+    .record-btn svg {
+      width: 32px;
+      height: 32px;
+      color: white;
+    }
+
+    .record-hint {
+      margin-top: 16px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--gray-600);
+      text-align: center;
+    }
+
+    .record-hint.recording {
+      color: var(--lie);
+      font-weight: 600;
+    }
+
+    .current-player {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--black);
+      margin-bottom: 8px;
+    }
+
+    .timer {
+      font-size: 36px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      color: var(--black);
+      margin-top: 12px;
+      display: none;
+    }
+
+    .timer.visible {
+      display: block;
+    }
+
+    /* Buttons */
+    .btn-primary {
+      display: block;
+      width: 100%;
+      padding: 16px 24px;
+      background: var(--black);
+      border: none;
+      border-radius: 12px;
+      color: var(--white);
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-primary:hover {
+      background: #1a1a1a;
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:disabled {
+      background: var(--gray-200);
+      color: var(--gray-400);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      display: block;
+      width: 100%;
+      padding: 16px 24px;
+      background: var(--white);
+      border: 2px solid var(--gray-200);
+      border-radius: 12px;
+      color: var(--black);
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      margin-top: 8px;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--black);
+    }
+
+    /* Analyzing overlay */
+    .analyzing-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--gray-100);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      z-index: 100;
+    }
+
+    .analyzing-overlay.visible {
+      display: flex;
+    }
+
+    .analyzing-spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid var(--gray-200);
+      border-top-color: var(--black);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .analyzing-text {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--black);
+      margin-top: 20px;
+    }
+
+    .analyzing-subtext {
+      font-size: 14px;
+      color: var(--gray-600);
+      margin-top: 6px;
+    }
+
+    /* Results */
+    .results-section {
+      display: none;
+    }
+
+    .results-section.visible {
+      display: block;
+    }
+
+    .verdict-card {
+      text-align: center;
+      padding: 48px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .verdict-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gray-400);
+      margin-bottom: 12px;
+    }
+
+    .verdict {
+      font-size: clamp(3.5rem, 18vw, 5rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      text-align: center;
+      width: 100%;
+    }
+
+    .verdict.truth {
+      color: var(--truth);
+    }
+
+    .verdict.deception {
+      color: var(--lie);
+    }
+
+    .confidence-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .confidence-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--gray-600);
+    }
+
+    .confidence-value {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--black);
+    }
+
+    .transcript-section {
+      padding: 20px 0;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gray-400);
+      margin-bottom: 8px;
+    }
+
+    .transcript-text {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--black);
+      font-style: italic;
+    }
+
+    .analysis-section {
+      padding: 20px 0;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .analysis-section:last-of-type {
+      border-bottom: none;
+    }
+
+    .analysis-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--black);
+      margin-bottom: 6px;
+    }
+
+    .analysis-content {
+      font-size: 14px;
+      color: var(--gray-600);
+      line-height: 1.6;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 24px 16px;
+      margin-top: auto;
+    }
+
+    .footer-text {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--gray-400);
+      line-height: 1.8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Hidden */
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Content Mode Toggle -->
+    <div class="content-mode-toggle">
+      <button class="content-mode-btn family" data-content="family">👨‍👩‍👧‍👦 Family Friendly</button>
+      <button class="content-mode-btn active" data-content="dark">🔥 Dark</button>
+    </div>
+
+    <header>
+      <div class="logo">Truth Machine</div>
+      <h1 class="title">Are you lying?</h1>
+    </header>
+
+    <!-- Main Section -->
+    <div id="mainSection">
+      <!-- Game Mode Toggle -->
+      <div class="card">
+        <div class="mode-toggle">
+          <button class="mode-btn active" data-mode="free">Free Speech</button>
+          <button class="mode-btn" data-mode="challenge">Challenge</button>
+          <button class="mode-btn" data-mode="party">Party Mode</button>
+        </div>
+
+        <!-- Free Speech / Challenge Recording -->
+        <div id="soloSection">
+          <div class="record-section">
+            <button class="record-btn" id="recordBtn">
+              <svg id="micIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" x2="12" y1="19" y2="22"/>
+              </svg>
+              <svg id="stopIcon" style="display:none" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="6" y="6" width="12" height="12" rx="1"/>
+              </svg>
+            </button>
+            <div class="record-hint" id="recordHint">Tap to record</div>
+            <div class="timer" id="timer">0:00</div>
+          </div>
+        </div>
+
+        <!-- Party Mode Setup -->
+        <div class="party-setup" id="partySetup">
+          <input type="text" class="party-input" id="partyQuestion" placeholder="Enter a question everyone must LIE about...">
+          
+          <div class="suggestion-chips" id="suggestionChips"></div>
+          
+          <input type="text" class="party-input" id="playerNameInput" placeholder="Add player name...">
+          <button class="btn-secondary" id="addPlayerBtn">+ Add Player</button>
+          
+          <div class="player-list" id="playerList"></div>
+          
+          <button class="btn-primary" id="startPartyBtn" disabled>Start Game</button>
+        </div>
+
+        <!-- Party Mode Playing -->
+        <div class="party-setup" id="partyPlaying">
+          <div class="record-section">
+            <div class="current-player" id="currentPlayerName"></div>
+            <div class="record-hint">Your turn to LIE convincingly!</div>
+            <button class="record-btn" id="partyRecordBtn">
+              <svg class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" x2="12" y1="19" y2="22"/>
+              </svg>
+              <svg class="stop-icon" style="display:none" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="6" y="6" width="12" height="12" rx="1"/>
+              </svg>
+            </button>
+            <div class="record-hint" id="partyRecordHint">Tap to record your lie</div>
+            <div class="timer" id="partyTimer">0:00</div>
+          </div>
+        </div>
+
+        <!-- Party Mode Results -->
+        <div class="party-setup" id="partyResults">
+          <h3 style="text-align:center;margin-bottom:20px;font-size:18px;">🏆 Results</h3>
+          <div id="partyScoreboard"></div>
+          <button class="btn-primary" id="newPartyBtn" style="margin-top:20px;">Play Again</button>
+        </div>
+      </div>
+
+      <!-- Challenge Card -->
+      <div class="challenge-card" id="challengeCard">
+        <div class="challenge-label" id="challengeLabel">Answer honestly... or lie</div>
+        <div class="challenge-text" id="challengeText"></div>
+        <div class="challenge-footer">
+          <button class="shuffle-btn" id="shuffleBtn">↻ Shuffle</button>
+          <div class="challenge-logo">TRUTH MACHINE</div>
+        </div>
+      </div>
+
+      <!-- Party Question Display -->
+      <div class="challenge-card" id="partyQuestionCard">
+        <div class="challenge-label">Everyone must LIE about this:</div>
+        <div class="challenge-text" id="partyQuestionDisplay"></div>
+        <div class="challenge-logo">PARTY MODE</div>
+      </div>
+    </div>
+
+    <!-- Results Section -->
+    <div class="results-section" id="resultsSection">
+      <div class="card verdict-card">
+        <div class="verdict-label">The Verdict</div>
+        <div class="verdict" id="verdict"></div>
+      </div>
+
+      <div class="card">
+        <div class="confidence-row">
+          <span class="confidence-label">Confidence</span>
+          <span class="confidence-value" id="confidenceValue">0%</span>
+        </div>
+
+        <div class="transcript-section">
+          <div class="section-label">What You Said</div>
+          <div class="transcript-text" id="transcript"></div>
+        </div>
+
+        <div class="analysis-section">
+          <div class="analysis-title">🎯 The Breakdown</div>
+          <div class="analysis-content" id="breakdown"></div>
+        </div>
+
+        <div class="analysis-section">
+          <div class="analysis-title">🚨 Red Flags</div>
+          <div class="analysis-content" id="signals"></div>
+        </div>
+
+        <div class="analysis-section">
+          <div class="analysis-title">💀 Final Judgment</div>
+          <div class="analysis-content" id="explanation"></div>
+        </div>
+
+        <button class="btn-primary" id="playAgainBtn">Play Again</button>
+      </div>
+    </div>
+
+    <footer>
+      <p class="footer-text">
+        For entertainment only · Audio deleted immediately
+      </p>
+    </footer>
+  </div>
+
+  <!-- Analyzing Overlay -->
+  <div class="analyzing-overlay" id="analyzingOverlay">
+    <div class="analyzing-spinner"></div>
+    <div class="analyzing-text">Analyzing...</div>
+    <div class="analyzing-subtext" id="analyzingSubtext">Reading your soul</div>
+  </div>
+
+  <script>
+    // ============ QUESTIONS DATABASE ============
+    const darkQuestions = [
+      "Have you ever faked an orgasm?",
+      "Have you ever cheated on someone?",
+      "Have you ever sexted someone while in a relationship with someone else?",
+      "Have you ever stayed with someone just because the sex was good?",
+      "Have you ever lied about your body count?",
+      "Have you ever hooked up with a friend's ex?",
+      "Have you ever ghosted someone after sleeping with them?",
+      "Have you ever thought about someone else during sex?",
+      "Have you ever stolen something worth more than $100?",
+      "Have you ever done illegal drugs at work?",
+      "Have you ever driven blackout drunk?",
+      "Have you ever lied on your taxes?",
+      "Have you ever catfished someone?",
+      "Have you ever made money doing something illegal?",
+      "Have you ever gone through your partner's phone without permission?",
+      "Have you ever lied on your resume about something major?",
+      "Have you ever hooked up with a coworker?",
+      "Have you ever stolen from your employer?",
+      "Have you ever slept with your boss?",
+      "Have you ever taken credit for someone else's work?",
+      "Have you ever lied to your parents about something they'd disown you for?",
+      "Is there a family member you genuinely hate?",
+      "Have you ever stolen money from family?",
+      "Have you ever talked major shit about your best friend?",
+      "Have you ever shared someone's secret that you swore to keep?",
+      "Have you ever sabotaged someone's relationship?",
+      "Have you ever spread a rumor you knew was false?",
+      "Have you ever enjoyed seeing someone fail?",
+      "Have you ever wished something bad would happen to someone?",
+      "Have you ever manipulated someone into doing something?",
+      "Have you ever used someone purely for their money or connections?",
+      "Have you ever lied about being in love?",
+      "Have you ever secretly recorded someone?",
+      "Have you ever cyberstalked an ex?",
+      "Have you ever had a secret relationship no one knew about?"
+    ];
+
+    const familyQuestions = [
+      "Have you ever pretended to like a gift you actually hated?",
+      "Have you ever blamed a sibling or pet for something you did?",
+      "Have you ever pretended to be asleep to avoid doing chores?",
+      "Have you ever eaten the last slice of something and denied it?",
+      "Have you ever lied about finishing your homework?",
+      "Have you ever pretended to be sick to skip school or an event?",
+      "Have you ever secretly stayed up way past your bedtime?",
+      "Have you ever hidden vegetables instead of eating them?",
+      "Have you ever broken something and not told anyone?",
+      "Have you ever read someone's diary or private notes?",
+      "Have you ever taken money from the family change jar?",
+      "Have you ever lied about brushing your teeth?",
+      "Have you ever pretended to know how to do something you didn't?",
+      "Have you ever snuck extra dessert when no one was looking?",
+      "Have you ever blamed 'bad connection' to get off a boring call?",
+      "Have you ever pretended to like someone's cooking?",
+      "Have you ever lied about your screen time?",
+      "Have you ever hidden a bad grade from your parents?",
+      "Have you ever secretly fed your dinner to the dog?",
+      "Have you ever lied about where you were going?",
+      "Have you ever taken something from a sibling's room?",
+      "Have you ever pretended to understand something you didn't?",
+      "Have you ever lied about finishing a book you were supposed to read?",
+      "Have you ever said you'd already done something you hadn't started?",
+      "Have you ever pretended a phone call was breaking up to end it?",
+      "Have you ever lied about being 'almost there' when you hadn't left?",
+      "Have you ever kept money you found instead of returning it?",
+      "Have you ever lied about how much something cost?",
+      "Have you ever secretly thrown away food you didn't like?",
+      "Have you ever pretended to remember someone you'd forgotten?"
+    ];
+
+    const darkPartySuggestions = [
+      "What's the most illegal thing you've done?",
+      "What's your biggest secret?",
+      "What's the worst lie you've ever told?",
+      "What's something you'd never tell your partner?",
+      "What's the most embarrassing thing you've done drunk?"
+    ];
+
+    const familyPartySuggestions = [
+      "What's the most embarrassing thing that happened at school?",
+      "What's a secret talent you have?",
+      "What's the best excuse you've used to skip something?",
+      "What's the sneakiest thing you've ever done?",
+      "What's something you pretend to like but actually don't?"
+    ];
+
+    // ============ STATE ============
+    let contentMode = 'dark'; // 'family' or 'dark'
+    let gameMode = 'free'; // 'free', 'challenge', 'party'
+    let currentChallenge = null;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let isRecording = false;
+    let timerInterval = null;
+    let recordingStartTime = null;
+
+    // Party mode state
+    let partyPlayers = [];
+    let partyQuestion = '';
+    let currentPlayerIndex = 0;
+    let partyResults = [];
+
+    // ============ ELEMENTS ============
+    const challengeCard = document.getElementById('challengeCard');
+    const challengeText = document.getElementById('challengeText');
+    const shuffleBtn = document.getElementById('shuffleBtn');
+    const soloSection = document.getElementById('soloSection');
+    const partySetup = document.getElementById('partySetup');
+    const partyPlaying = document.getElementById('partyPlaying');
+    const partyResultsEl = document.getElementById('partyResults');
+    const partyQuestionCard = document.getElementById('partyQuestionCard');
+    const mainSection = document.getElementById('mainSection');
+    const resultsSection = document.getElementById('resultsSection');
+    const analyzingOverlay = document.getElementById('analyzingOverlay');
+
+    // ============ CONTENT MODE ============
+    document.querySelectorAll('.content-mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.content-mode-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        contentMode = btn.dataset.content;
+        
+        // Update card style
+        if (contentMode === 'family') {
+          challengeCard.classList.add('family-mode');
+          partyQuestionCard.classList.add('family-mode');
+        } else {
+          challengeCard.classList.remove('family-mode');
+          partyQuestionCard.classList.remove('family-mode');
+        }
+        
+        // Refresh challenge if visible
+        if (gameMode === 'challenge') {
+          drawCard();
+        }
+        
+        // Update party suggestions
+        updatePartySuggestions();
+      });
+    });
+
+    // ============ GAME MODE ============
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        gameMode = btn.dataset.mode;
+        
+        // Hide all sections
+        soloSection.classList.add('hidden');
+        partySetup.classList.remove('visible');
+        partyPlaying.classList.remove('visible');
+        partyResultsEl.classList.remove('visible');
+        challengeCard.classList.remove('visible');
+        partyQuestionCard.classList.remove('visible');
+        
+        if (gameMode === 'free') {
+          soloSection.classList.remove('hidden');
+        } else if (gameMode === 'challenge') {
+          soloSection.classList.remove('hidden');
+          drawCard();
+        } else if (gameMode === 'party') {
+          partySetup.classList.add('visible');
+          updatePartySuggestions();
+          resetParty();
+        }
+      });
+    });
+
+    // ============ CHALLENGE MODE ============
+    function drawCard() {
+      const questions = contentMode === 'family' ? familyQuestions : darkQuestions;
+      currentChallenge = questions[Math.floor(Math.random() * questions.length)];
+      challengeText.textContent = currentChallenge;
+      challengeCard.classList.add('visible');
+    }
+
+    shuffleBtn.addEventListener('click', drawCard);
+
+    // ============ PARTY MODE ============
+    function updatePartySuggestions() {
+      const suggestions = contentMode === 'family' ? familyPartySuggestions : darkPartySuggestions;
+      const chipsContainer = document.getElementById('suggestionChips');
+      chipsContainer.innerHTML = suggestions.map(s => 
+        `<button class="suggestion-chip">${s}</button>`
+      ).join('');
+      
+      chipsContainer.querySelectorAll('.suggestion-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          document.getElementById('partyQuestion').value = chip.textContent;
+          checkPartyReady();
+        });
+      });
+    }
+
+    function resetParty() {
+      partyPlayers = [];
+      partyQuestion = '';
+      currentPlayerIndex = 0;
+      partyResults = [];
+      document.getElementById('partyQuestion').value = '';
+      document.getElementById('playerNameInput').value = '';
+      updatePlayerList();
+      checkPartyReady();
+    }
+
+    document.getElementById('addPlayerBtn').addEventListener('click', () => {
+      const input = document.getElementById('playerNameInput');
+      const name = input.value.trim();
+      if (name && !partyPlayers.includes(name)) {
+        partyPlayers.push(name);
+        input.value = '';
+        updatePlayerList();
+        checkPartyReady();
+      }
+    });
+
+    document.getElementById('playerNameInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        document.getElementById('addPlayerBtn').click();
+      }
+    });
+
+    document.getElementById('partyQuestion').addEventListener('input', checkPartyReady);
+
+    function updatePlayerList() {
+      const list = document.getElementById('playerList');
+      list.innerHTML = partyPlayers.map((name, i) => `
+        <div class="player-item">
+          <span class="player-name">${name}</span>
+          <button onclick="removePlayer(${i})" style="background:none;border:none;cursor:pointer;color:var(--gray-400);">✕</button>
+        </div>
+      `).join('');
+    }
+
+    window.removePlayer = function(index) {
+      partyPlayers.splice(index, 1);
+      updatePlayerList();
+      checkPartyReady();
+    };
+
+    function checkPartyReady() {
+      const question = document.getElementById('partyQuestion').value.trim();
+      const btn = document.getElementById('startPartyBtn');
+      btn.disabled = !(question && partyPlayers.length >= 2);
+    }
+
+    document.getElementById('startPartyBtn').addEventListener('click', startPartyGame);
+
+    function startPartyGame() {
+      partyQuestion = document.getElementById('partyQuestion').value.trim();
+      currentPlayerIndex = 0;
+      partyResults = [];
+      
+      partySetup.classList.remove('visible');
+      partyPlaying.classList.add('visible');
+      partyQuestionCard.classList.add('visible');
+      
+      document.getElementById('partyQuestionDisplay').textContent = partyQuestion;
+      updateCurrentPlayer();
+    }
+
+    function updateCurrentPlayer() {
+      document.getElementById('currentPlayerName').textContent = 
+        `${partyPlayers[currentPlayerIndex]}'s turn`;
+    }
+
+    // Party recording
+    const partyRecordBtn = document.getElementById('partyRecordBtn');
+    let partyRecording = false;
+    let partyMediaRecorder = null;
+    let partyAudioChunks = [];
+    let partyTimerInterval = null;
+    let partyRecordingStart = null;
+
+    partyRecordBtn.addEventListener('click', async () => {
+      if (partyRecording) {
+        stopPartyRecording();
+      } else {
+        await startPartyRecording();
+      }
+    });
+
+    async function startPartyRecording() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        partyMediaRecorder = new MediaRecorder(stream);
+        partyAudioChunks = [];
+        
+        partyMediaRecorder.ondataavailable = (e) => partyAudioChunks.push(e.data);
+        
+        partyMediaRecorder.onstop = async () => {
+          const audioBlob = new Blob(partyAudioChunks, { type: 'audio/webm' });
+          stream.getTracks().forEach(track => track.stop());
+          await analyzePartyResponse(audioBlob);
+        };
+        
+        partyMediaRecorder.start();
+        partyRecording = true;
+        
+        partyRecordBtn.classList.add('recording');
+        partyRecordBtn.querySelector('.mic-icon').style.display = 'none';
+        partyRecordBtn.querySelector('.stop-icon').style.display = 'block';
+        document.getElementById('partyRecordHint').textContent = 'Recording...';
+        document.getElementById('partyRecordHint').classList.add('recording');
+        
+        partyRecordingStart = Date.now();
+        document.getElementById('partyTimer').classList.add('visible');
+        partyTimerInterval = setInterval(() => {
+          const elapsed = Math.floor((Date.now() - partyRecordingStart) / 1000);
+          document.getElementById('partyTimer').textContent = 
+            `${Math.floor(elapsed/60)}:${(elapsed%60).toString().padStart(2,'0')}`;
+        }, 100);
+        
+      } catch (err) {
+        alert('Microphone access required.');
+      }
+    }
+
+    function stopPartyRecording() {
+      if (partyMediaRecorder && partyRecording) {
+        partyMediaRecorder.stop();
+        partyRecording = false;
+        
+        partyRecordBtn.classList.remove('recording');
+        partyRecordBtn.querySelector('.mic-icon').style.display = 'block';
+        partyRecordBtn.querySelector('.stop-icon').style.display = 'none';
+        document.getElementById('partyRecordHint').textContent = 'Processing...';
+        document.getElementById('partyRecordHint').classList.remove('recording');
+        
+        clearInterval(partyTimerInterval);
+      }
+    }
+
+    async function analyzePartyResponse(audioBlob) {
+      showAnalyzing();
+      
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'recording.webm');
+      formData.append('mode', 'party');
+      formData.append('prompt', `The player was asked: "${partyQuestion}" and they are TRYING TO LIE convincingly. Evaluate how convincing their lie is.`);
+      
+      try {
+        const res = await fetch('/api/analyze', {
+          method: 'POST',
+          body: formData
+        });
+        
+        const data = await res.json();
+        hideAnalyzing();
+        
+        if (data.success) {
+          // Higher confidence in TRUTH = better liar (they fooled the AI)
+          // Lower confidence or DECEPTION = worse liar
+          // Add granularity based on multiple factors
+          let baseScore;
+          if (data.verdict === 'TRUTH') {
+            baseScore = data.confidence; // They fooled the AI!
+          } else {
+            baseScore = 100 - data.confidence; // AI caught them
+          }
+          
+          // Add micro-variations based on response characteristics
+          // This ensures unique scores even with same verdict/confidence
+          const wordCount = data.transcript ? data.transcript.split(' ').length : 0;
+          const charCount = data.transcript ? data.transcript.length : 0;
+          const responseVariation = ((wordCount * 0.1) + (charCount * 0.01)) % 5;
+          const randomMicro = Math.random() * 0.9; // 0-0.9 random variation
+          
+          // Final score with decimal precision
+          const score = Math.min(100, Math.max(0, baseScore + responseVariation + randomMicro));
+          
+          partyResults.push({
+            player: partyPlayers[currentPlayerIndex],
+            score: parseFloat(score.toFixed(1)),
+            verdict: data.verdict,
+            confidence: data.confidence,
+            transcript: data.transcript
+          });
+          
+          currentPlayerIndex++;
+          
+          if (currentPlayerIndex < partyPlayers.length) {
+            // Next player
+            updateCurrentPlayer();
+            document.getElementById('partyRecordHint').textContent = 'Tap to record your lie';
+            document.getElementById('partyTimer').classList.remove('visible');
+            document.getElementById('partyTimer').textContent = '0:00';
+          } else {
+            // Game over - show results
+            showPartyResults();
+          }
+        }
+      } catch (err) {
+        hideAnalyzing();
+        alert('Analysis failed: ' + err.message);
+      }
+    }
+
+    function showPartyResults() {
+      partyPlaying.classList.remove('visible');
+      partyQuestionCard.classList.remove('visible');
+      partyResultsEl.classList.add('visible');
+      
+      // Sort by score (higher = better liar)
+      partyResults.sort((a, b) => b.score - a.score);
+      
+      const scoreboard = document.getElementById('partyScoreboard');
+      scoreboard.innerHTML = partyResults.map((r, i) => `
+        <div class="player-item">
+          <div>
+            <span class="player-name">${r.player}</span>
+            ${i === 0 ? '<span class="winner-badge">👑 BEST LIAR</span>' : ''}
+            <div style="font-size:12px;color:var(--gray-400);margin-top:4px;">
+              AI thought: ${r.verdict} (${r.confidence}% sure)
+            </div>
+          </div>
+          <span class="player-score">${r.score.toFixed(1)}</span>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('newPartyBtn').addEventListener('click', () => {
+      partyResultsEl.classList.remove('visible');
+      partySetup.classList.add('visible');
+      resetParty();
+    });
+
+    // ============ SOLO RECORDING ============
+    const recordBtn = document.getElementById('recordBtn');
+    const recordHint = document.getElementById('recordHint');
+    const timer = document.getElementById('timer');
+
+    recordBtn.addEventListener('click', async () => {
+      if (isRecording) {
+        stopRecording();
+      } else {
+        await startRecording();
+      }
+    });
+
+    async function startRecording() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        
+        mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+        
+        mediaRecorder.onstop = async () => {
+          const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+          stream.getTracks().forEach(track => track.stop());
+          await analyzeAudio(audioBlob);
+        };
+        
+        mediaRecorder.start();
+        isRecording = true;
+        
+        recordBtn.classList.add('recording');
+        document.getElementById('micIcon').style.display = 'none';
+        document.getElementById('stopIcon').style.display = 'block';
+        recordHint.textContent = 'Recording...';
+        recordHint.classList.add('recording');
+        
+        recordingStartTime = Date.now();
+        timer.classList.add('visible');
+        timerInterval = setInterval(() => {
+          const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+          timer.textContent = `${Math.floor(elapsed/60)}:${(elapsed%60).toString().padStart(2,'0')}`;
+        }, 100);
+        
+      } catch (err) {
+        alert('Microphone access required.');
+      }
+    }
+
+    function stopRecording() {
+      if (mediaRecorder && isRecording) {
+        mediaRecorder.stop();
+        isRecording = false;
+        
+        recordBtn.classList.remove('recording');
+        document.getElementById('micIcon').style.display = 'block';
+        document.getElementById('stopIcon').style.display = 'none';
+        recordHint.textContent = 'Processing...';
+        recordHint.classList.remove('recording');
+        
+        clearInterval(timerInterval);
+      }
+    }
+
+    async function analyzeAudio(audioBlob) {
+      showAnalyzing();
+      
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'recording.webm');
+      formData.append('mode', gameMode);
+      if (currentChallenge) {
+        formData.append('prompt', currentChallenge);
+      }
+      
+      try {
+        const res = await fetch('/api/analyze', {
+          method: 'POST',
+          body: formData
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          hideAnalyzing();
+          showResults(data);
+        } else {
+          throw new Error(data.message || 'Analysis failed');
+        }
+      } catch (err) {
+        hideAnalyzing();
+        alert('Analysis failed: ' + err.message);
+        resetRecording();
+      }
+    }
+
+    // ============ OVERLAY & RESULTS ============
+    function showAnalyzing() {
+      analyzingOverlay.classList.add('visible');
+      
+      const messages = [
+        'Reading your soul',
+        'Detecting bullshit',
+        'Scanning for lies',
+        'Analyzing hesitations',
+        'Judging you silently'
+      ];
+      
+      let idx = 0;
+      const subtextEl = document.getElementById('analyzingSubtext');
+      const interval = setInterval(() => {
+        idx = (idx + 1) % messages.length;
+        subtextEl.textContent = messages[idx];
+      }, 1000);
+      
+      analyzingOverlay.dataset.interval = interval;
+    }
+
+    function hideAnalyzing() {
+      analyzingOverlay.classList.remove('visible');
+      clearInterval(analyzingOverlay.dataset.interval);
+    }
+
+    function showResults(data) {
+      mainSection.style.display = 'none';
+      resultsSection.classList.add('visible');
+      
+      document.getElementById('verdict').textContent = data.verdict;
+      document.getElementById('verdict').className = 'verdict ' + data.verdict.toLowerCase();
+      document.getElementById('confidenceValue').textContent = data.confidence + '%';
+      document.getElementById('transcript').textContent = '"' + data.transcript + '"';
+      document.getElementById('breakdown').textContent = data.breakdown || 'No analysis available';
+      document.getElementById('signals').textContent = data.signals || 'None detected';
+      document.getElementById('explanation').textContent = data.explanation || 'The machine has spoken.';
+    }
+
+    document.getElementById('playAgainBtn').addEventListener('click', () => {
+      resultsSection.classList.remove('visible');
+      mainSection.style.display = 'block';
+      resetRecording();
+      
+      if (gameMode === 'challenge') {
+        drawCard();
+      }
+    });
+
+    function resetRecording() {
+      recordHint.textContent = 'Tap to record';
+      timer.classList.remove('visible');
+      timer.textContent = '0:00';
+    }
+
+    // Health check
+    fetch('/api/health').then(r => r.json()).then(console.log).catch(console.error);
+  </script>
+</body>
+</html>

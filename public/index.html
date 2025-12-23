@@ -567,6 +567,13 @@
       padding: 12px 4px;
       background: var(--white);
       border-radius: 10px;
+      cursor: help;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .score-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
     .score-item-label {
@@ -1405,6 +1412,14 @@
         entertainment: '🎪'
       };
       
+      const scoreTooltips = {
+        deception: 'Poker Face - Did they sell it convincingly?',
+        conviction: 'Confidence - Did they believe their own lie?',
+        creativity: 'Creativity - Original and imaginative story?',
+        detail: 'Detail - Specific names, places, facts?',
+        entertainment: 'Showmanship - Funny, dramatic, engaging?'
+      };
+      
       breakdown.innerHTML = '<div class="card"><div class="card-title">Detailed Breakdown</div>' +
         gameResults.map((r, i) => `
           <div class="score-card">
@@ -1415,7 +1430,7 @@
             ${r.scores ? `
               <div class="score-grid">
                 ${Object.entries(r.scores).map(([key, val]) => `
-                  <div class="score-item">
+                  <div class="score-item" title="${scoreTooltips[key] || key}">
                     <div class="score-item-label">${scoreLabels[key] || key}</div>
                     <div class="score-item-value">${typeof val === 'number' ? val.toFixed(1) : val}</div>
                   </div>

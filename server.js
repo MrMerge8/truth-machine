@@ -250,18 +250,26 @@ function buildAnalysisPrompt(transcript, duration, mode, prompt) {
   
   // Use enhanced scoring for party mode
   if (mode === 'party') {
-    return `You are THE TRUTH MACHINE - a dramatic game show host judging lies at a party!
+    return `You are THE TRUTH MACHINE - a HARSH, CRITICAL judge scoring lies at a party game!
 
 🎯 THE CHALLENGE: "${prompt}"
 
-🎤 THE PLAYER'S LIE: "${transcript}"
+🎤 THE PLAYER'S RESPONSE: "${transcript}"
 
 📊 SPEECH DATA:
 - Duration: ${duration?.toFixed(1) || 'unknown'} seconds
 - Words: ${wordCount}
 - Pace: ${wordsPerSecond.toFixed(1)} words/sec
 
-SCORE THIS LIE on 5 criteria. Use PRECISE decimals (7.3, 8.7, 6.1 etc.) - NEVER round numbers!
+⚠️ SCORING RULES - BE HARSH:
+- One-word answers or "yes/no" responses = MAX 2.0 in ALL categories
+- Under 10 words = MAX 3.0 for creativity, detail, entertainment
+- No story or explanation = MAX 2.0 for creativity and detail
+- Generic/boring responses = MAX 4.0 for entertainment
+- Only elaborate, creative, detailed lies deserve scores above 7.0
+- A score of 8+ should be RARE and reserved for truly impressive performances
+
+SCORE THIS LIE on 5 criteria. Use PRECISE decimals (2.3, 4.7, 6.1 etc.):
 
 Return ONLY this JSON (no markdown, no explanation before/after):
 {
@@ -270,15 +278,15 @@ Return ONLY this JSON (no markdown, no explanation before/after):
   "scores": {
     "deception": [0.0-10.0 - POKER FACE: Did they sell it? Voice steady? No nervous tells?],
     "conviction": [0.0-10.0 - CONFIDENCE: Did they sound like they believed their own lie?],
-    "creativity": [0.0-10.0 - IMAGINATION: Was this a creative, original story or basic?],
-    "detail": [0.0-10.0 - WORLD-BUILDING: Rich details, names, specifics? Or vague?],
-    "entertainment": [0.0-10.0 - SHOWMANSHIP: Was it funny, dramatic, or entertaining?]
+    "creativity": [0.0-10.0 - IMAGINATION: Was this creative/original? "Yes I have" = 1.0],
+    "detail": [0.0-10.0 - WORLD-BUILDING: Specific details, names, places? Vague = low score],
+    "entertainment": [0.0-10.0 - SHOWMANSHIP: Was it funny, dramatic, engaging? Boring = low]
   },
   "totalScore": [sum of all 5 scores, multiplied by 2 to get 0-100 scale],
-  "breakdown": "[2-3 sentence performance review - be specific about what they did]",
+  "breakdown": "[2-3 sentence performance review - call out lazy/short responses!]",
   "signals": "[What linguistic/vocal patterns gave them away OR fooled you]",
-  "judgment": "[DRAMATIC 1-2 sentence game show verdict with personality!]",
-  "tip": "[One specific, actionable tip to become a better liar]"
+  "judgment": "[DRAMATIC 1-2 sentence verdict - roast them if they were lazy!]",
+  "tip": "[Specific tip - if response was short, tell them to elaborate more!]"
 }`;
   }
   

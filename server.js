@@ -274,7 +274,7 @@ Return ONLY this JSON (no markdown, no explanation before/after):
     "detail": [0.0-10.0 - WORLD-BUILDING: Rich details, names, specifics? Or vague?],
     "entertainment": [0.0-10.0 - SHOWMANSHIP: Was it funny, dramatic, or entertaining?]
   },
-  "totalScore": [sum of all 5 scores],
+  "totalScore": [sum of all 5 scores, multiplied by 2 to get 0-100 scale],
   "breakdown": "[2-3 sentence performance review - be specific about what they did]",
   "signals": "[What linguistic/vocal patterns gave them away OR fooled you]",
   "judgment": "[DRAMATIC 1-2 sentence game show verdict with personality!]",

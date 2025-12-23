@@ -1430,8 +1430,8 @@
             } else {
               baseScore = 100 - data.confidence; // AI caught them
             }
-            // Scale to 0-50 range to match detailed scoring
-            finalScore = baseScore / 2;
+            // Already 0-100 scale
+            finalScore = baseScore;
           }
           
           partyResults.push({
@@ -1505,7 +1505,7 @@
             <div class="score-card">
               <div class="score-card-header">
                 <span class="score-card-name">${i === 0 ? '👑 ' : ''}${r.player}</span>
-                <span class="score-card-total">${r.score.toFixed(1)}/50</span>
+                <span class="score-card-total">${r.score.toFixed(1)}/100</span>
               </div>
               ${hasScores ? `
                 <div class="score-grid">

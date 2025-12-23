@@ -122,9 +122,12 @@ Your verdicts should feel like a game show reveal.`
     const result = analysis.choices[0].message.content;
     
     // Parse the structured response
-    const parsedResult = parseAnalysisResult(result);
+    const parsedResult = parseAnalysisResult(result, mode);
     
     console.log(`✅ Verdict: ${parsedResult.verdict} (${parsedResult.confidence}% confidence)`);
+    if (parsedResult.scores) {
+      console.log(`📊 Scores:`, parsedResult.scores);
+    }
     
     // IMMEDIATELY delete the audio file
     deleteAudioFile(audioPath);
@@ -238,12 +241,48 @@ function getRandomNeverHaveI() {
 
 function buildAnalysisPrompt(transcript, duration, mode, prompt) {
   const wordsPerSecond = transcript.split(' ').length / (duration || 1);
+  const wordCount = transcript.split(' ').length;
   
   let contextInfo = '';
   if (prompt) {
     contextInfo = `\n\nCONTEXT: They were responding to this challenge: "${prompt}"`;
   }
   
+  // Use enhanced scoring for party mode
+  if (mode === 'party') {
+    return `You are THE TRUTH MACHINE - a dramatic game show host judging lies at a party!
+
+🎯 THE CHALLENGE: "${prompt}"
+
+🎤 THE PLAYER'S LIE: "${transcript}"
+
+📊 SPEECH DATA:
+- Duration: ${duration?.toFixed(1) || 'unknown'} seconds
+- Words: ${wordCount}
+- Pace: ${wordsPerSecond.toFixed(1)} words/sec
+
+SCORE THIS LIE on 5 criteria. Use PRECISE decimals (7.3, 8.7, 6.1 etc.) - NEVER round numbers!
+
+Return ONLY this JSON (no markdown, no explanation before/after):
+{
+  "verdict": "TRUTH" or "DECEPTION",
+  "confidence": [50-99, how sure you are],
+  "scores": {
+    "deception": [0.0-10.0 - POKER FACE: Did they sell it? Voice steady? No nervous tells?],
+    "conviction": [0.0-10.0 - CONFIDENCE: Did they sound like they believed their own lie?],
+    "creativity": [0.0-10.0 - IMAGINATION: Was this a creative, original story or basic?],
+    "detail": [0.0-10.0 - WORLD-BUILDING: Rich details, names, specifics? Or vague?],
+    "entertainment": [0.0-10.0 - SHOWMANSHIP: Was it funny, dramatic, or entertaining?]
+  },
+  "totalScore": [sum of all 5 scores],
+  "breakdown": "[2-3 sentence performance review - be specific about what they did]",
+  "signals": "[What linguistic/vocal patterns gave them away OR fooled you]",
+  "judgment": "[DRAMATIC 1-2 sentence game show verdict with personality!]",
+  "tip": "[One specific, actionable tip to become a better liar]"
+}`;
+  }
+  
+  // Standard analysis for non-party modes
   return `ANALYZE THIS STATEMENT FOR DECEPTION:
 
 "${transcript}"
@@ -270,8 +309,35 @@ CONFIDENCE: [0-100]%
 Remember: Be entertaining! This is a party game. Ham it up!`;
 }
 
-function parseAnalysisResult(result) {
+function parseAnalysisResult(result, mode) {
   try {
+    // Try to parse as JSON first (for party mode)
+    if (mode === 'party') {
+      try {
+        // Clean up potential markdown code blocks
+        let jsonStr = result.trim();
+        if (jsonStr.startsWith('```')) {
+          jsonStr = jsonStr.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
+        }
+        
+        const parsed = JSON.parse(jsonStr);
+        return {
+          verdict: parsed.verdict || 'UNKNOWN',
+          confidence: parsed.confidence || 50,
+          scores: parsed.scores || null,
+          totalScore: parsed.totalScore || 0,
+          breakdown: parsed.breakdown || '',
+          signals: parsed.signals || '',
+          explanation: parsed.judgment || '',
+          tip: parsed.tip || '',
+          raw: result
+        };
+      } catch (jsonErr) {
+        console.log('JSON parse failed, falling back to text parsing');
+      }
+    }
+    
+    // Fallback to text parsing
     const verdictMatch = result.match(/VERDICT:\s*(TRUTH|DECEPTION)/i);
     const confidenceMatch = result.match(/CONFIDENCE:\s*(\d+)/);
     
@@ -286,18 +352,24 @@ function parseAnalysisResult(result) {
     return {
       verdict,
       confidence,
+      scores: null,
+      totalScore: null,
       breakdown: breakdownMatch ? breakdownMatch[1].trim() : '',
       signals: signalsMatch ? signalsMatch[1].trim() : '',
       explanation: explainedMatch ? explainedMatch[1].trim() : '',
+      tip: '',
       raw: result
     };
   } catch (e) {
     return {
       verdict: 'UNKNOWN',
       confidence: 50,
+      scores: null,
+      totalScore: null,
       breakdown: result,
       signals: '',
       explanation: '',
+      tip: '',
       raw: result
     };
   }

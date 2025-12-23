@@ -309,6 +309,111 @@
       margin-left: 8px;
     }
 
+    /* Score breakdown styles */
+    .score-card {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      border: 1px solid var(--gray-200);
+    }
+
+    body.dark-mode .score-card {
+      background: #1a1a1a;
+      border-color: #333;
+    }
+
+    .score-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    body.dark-mode .score-card-header {
+      border-color: #333;
+    }
+
+    .score-card-name {
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    .score-card-total {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--truth);
+    }
+
+    .score-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .score-item {
+      text-align: center;
+      padding: 8px 4px;
+      background: var(--gray-100);
+      border-radius: 8px;
+    }
+
+    body.dark-mode .score-item {
+      background: #2a2a2a;
+    }
+
+    .score-item-label {
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--gray-400);
+      margin-bottom: 4px;
+    }
+
+    .score-item-value {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--black);
+    }
+
+    body.dark-mode .score-item-value {
+      color: var(--white);
+    }
+
+    .score-feedback {
+      font-size: 13px;
+      color: var(--gray-600);
+      line-height: 1.5;
+      margin-top: 8px;
+    }
+
+    body.dark-mode .score-feedback {
+      color: #999;
+    }
+
+    .score-tip {
+      font-size: 12px;
+      color: var(--family);
+      margin-top: 8px;
+      padding: 8px 12px;
+      background: rgba(59, 130, 246, 0.1);
+      border-radius: 8px;
+    }
+
+    body.dark-mode .score-tip {
+      background: rgba(59, 130, 246, 0.2);
+    }
+
+    @media (max-width: 400px) {
+      .score-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
     /* Record section */
     .record-section {
       display: flex;
@@ -879,6 +984,7 @@
         <div class="party-setup" id="partyResults">
           <h3 style="text-align:center;margin-bottom:20px;font-size:18px;">🏆 Results</h3>
           <div id="partyScoreboard"></div>
+          <div id="detailedResults" style="margin-top:20px;"></div>
           <button class="btn-primary" id="newPartyBtn" style="margin-top:20px;">Play Again</button>
         </div>
       </div>
@@ -1309,32 +1415,34 @@
         hideAnalyzing();
         
         if (data.success) {
-          // Higher confidence in TRUTH = better liar (they fooled the AI)
-          // Lower confidence or DECEPTION = worse liar
-          // Add granularity based on multiple factors
-          let baseScore;
-          if (data.verdict === 'TRUTH') {
-            baseScore = data.confidence; // They fooled the AI!
+          // Use detailed scores if available from AI
+          let finalScore;
+          let scores = data.scores || null;
+          
+          if (data.totalScore) {
+            // AI provided detailed scoring
+            finalScore = data.totalScore;
           } else {
-            baseScore = 100 - data.confidence; // AI caught them
+            // Fallback: Calculate from verdict/confidence
+            let baseScore;
+            if (data.verdict === 'TRUTH') {
+              baseScore = data.confidence; // They fooled the AI!
+            } else {
+              baseScore = 100 - data.confidence; // AI caught them
+            }
+            // Scale to 0-50 range to match detailed scoring
+            finalScore = baseScore / 2;
           }
-          
-          // Add micro-variations based on response characteristics
-          // This ensures unique scores even with same verdict/confidence
-          const wordCount = data.transcript ? data.transcript.split(' ').length : 0;
-          const charCount = data.transcript ? data.transcript.length : 0;
-          const responseVariation = ((wordCount * 0.1) + (charCount * 0.01)) % 5;
-          const randomMicro = Math.random() * 0.9; // 0-0.9 random variation
-          
-          // Final score with decimal precision
-          const score = Math.min(100, Math.max(0, baseScore + responseVariation + randomMicro));
           
           partyResults.push({
             player: partyPlayers[currentPlayerIndex],
-            score: parseFloat(score.toFixed(1)),
+            score: parseFloat(finalScore.toFixed(1)),
+            scores: scores,
             verdict: data.verdict,
             confidence: data.confidence,
-            transcript: data.transcript
+            transcript: data.transcript,
+            breakdown: data.breakdown || '',
+            tip: data.tip || ''
           });
           
           currentPlayerIndex++;
@@ -1364,6 +1472,7 @@
       // Sort by score (higher = better liar)
       partyResults.sort((a, b) => b.score - a.score);
       
+      // Leaderboard summary
       const scoreboard = document.getElementById('partyScoreboard');
       scoreboard.innerHTML = partyResults.map((r, i) => `
         <div class="player-item">
@@ -1377,6 +1486,42 @@
           <span class="player-score">${r.score.toFixed(1)}</span>
         </div>
       `).join('');
+      
+      // Detailed score cards
+      const detailedResults = document.getElementById('detailedResults');
+      detailedResults.innerHTML = '<h4 style="margin:20px 0 12px;font-size:14px;color:var(--gray-400);text-transform:uppercase;letter-spacing:0.1em;">Detailed Breakdown</h4>' +
+        partyResults.map((r, i) => {
+          const hasScores = r.scores && typeof r.scores === 'object';
+          
+          const scoreLabels = {
+            deception: '🎭 Poker Face',
+            conviction: '💪 Confidence', 
+            creativity: '✨ Creativity',
+            detail: '📝 Detail',
+            entertainment: '🎪 Showmanship'
+          };
+          
+          return `
+            <div class="score-card">
+              <div class="score-card-header">
+                <span class="score-card-name">${i === 0 ? '👑 ' : ''}${r.player}</span>
+                <span class="score-card-total">${r.score.toFixed(1)}/50</span>
+              </div>
+              ${hasScores ? `
+                <div class="score-grid">
+                  ${Object.entries(r.scores).map(([key, val]) => `
+                    <div class="score-item">
+                      <div class="score-item-label">${scoreLabels[key] || key}</div>
+                      <div class="score-item-value">${typeof val === 'number' ? val.toFixed(1) : val}</div>
+                    </div>
+                  `).join('')}
+                </div>
+              ` : ''}
+              ${r.breakdown ? `<div class="score-feedback">${r.breakdown}</div>` : ''}
+              ${r.tip ? `<div class="score-tip">💡 ${r.tip}</div>` : ''}
+            </div>
+          `;
+        }).join('');
     }
 
     document.getElementById('newPartyBtn').addEventListener('click', () => {

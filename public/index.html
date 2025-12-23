@@ -954,7 +954,8 @@
 
         <div id="detailedBreakdown"></div>
 
-        <button class="btn" id="playAgainBtn">🔄 Play Again</button>
+        <button class="btn" id="playAgainBtn">🔄 Same Question</button>
+        <button class="btn btn-secondary" id="newQuestionBtn" style="margin-top:8px;">🎲 New Question</button>
         <button class="btn btn-secondary" id="newPlayersBtn" style="margin-top:8px;">👥 New Players</button>
       </div>
     </div>
@@ -1192,6 +1193,7 @@
     // ============ GAME FLOW ============
     document.getElementById('startGameBtn').addEventListener('click', startGame);
     document.getElementById('playAgainBtn').addEventListener('click', playAgain);
+    document.getElementById('newQuestionBtn').addEventListener('click', newQuestion);
     document.getElementById('newPlayersBtn').addEventListener('click', newPlayers);
 
     function startGame() {
@@ -1238,6 +1240,16 @@
       gameResults = [];
       updateProgress();
       updateCurrentPlayer();
+    }
+
+    function newQuestion() {
+      resultsPhase.classList.remove('visible');
+      setupPhase.classList.add('visible');
+      currentQuestion = '';
+      document.getElementById('customQuestion').value = '';
+      challengeCard.classList.remove('visible');
+      checkCanStart();
+      // Players are kept!
     }
 
     function newPlayers() {

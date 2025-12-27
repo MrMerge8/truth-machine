@@ -1515,5 +1515,15 @@
     // Health check
     fetch('/api/health').then(r => r.json()).then(console.log).catch(console.error);
   </script>
+
+  <!-- DevHub Analytics -->
+  <script src="https://devhub-production-7ecc.up.railway.app/devhub-sdk.js"></script>
+  <script>
+    DevHub.init({
+      apiKey: 'devhub-portfolio',
+      appId: 'liar-liar',
+      endpoint: 'https://devhub-production-7ecc.up.railway.app/api'
+    });
+  </script>
 </body>
 </html>
